@@ -1,0 +1,28 @@
+# Node.js
+**/node_modules/
+**/dist/
+**/build/
+.npm
+.eslintcache
+node/
+
+# Python / Django
+**/__pycache__/
+**/*.py[cod]
+**/*$py.class
+**/venv/
+**/env/
+**/.env
+**/.venv
+**/db.sqlite3
+**/dummy_db.sqlite3
+
+# OS / IDE
+.DS_Store
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
