@@ -53,11 +53,12 @@ jobs:
           name: TheClassMate-Parent-App
           path: parent_portal/android/app/build/outputs/apk/debug/app-debug.apk
 
-      - name: Upload Sync Log on Failure
+      - name: Commit and push logs on failure
         if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: build-failure-logs
-          path: |
-            parent_portal/capacitor-sync.log
-            parent_portal/gradle-build.log
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+          git add parent_portal/capacitor-sync.log || true
+          git add parent_portal/gradle-build.log || true
+          git commit -m "build failure logs" || true
+          git push origin HEAD:build-logs --force
