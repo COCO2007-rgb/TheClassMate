@@ -1,3 +1,4 @@
+from django.db.models import Prefetch
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -31,7 +32,9 @@ def attendance_view(request):
         elif request.user.role != "developer" and batch.coaching_center != request.user.coaching_center:
             return Response({"error": "Access denied to batch"}, status=status.HTTP_403_FORBIDDEN)
             
-        sheet = AttendanceSheet.objects.filter(batch_id=batch_id, date=date).first()
+        sheet = AttendanceSheet.objects.filter(batch_id=batch_id, date=date).prefetch_related(
+            Prefetch("records", queryset=StudentAttendance.objects.all().select_related("student"))
+        ).first()
         if not sheet:
             # Return empty structure if sheet doesn't exist yet
             return Response({"records": []})

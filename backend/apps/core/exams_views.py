@@ -1,3 +1,4 @@
+from django.db.models import Prefetch
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -15,7 +16,9 @@ def exams_view(request):
     if request.method == "GET":
         s_doc = get_user_student(request.user)
         if s_doc:
-            queryset = Exam.objects.filter(batch__in=s_doc.batches.all()).order_by("-exam_date")
+            queryset = Exam.objects.filter(batch__in=s_doc.batches.all()).prefetch_related(
+                Prefetch("marks", queryset=ExamMark.objects.filter(student=s_doc).select_related("student"))
+            ).order_by("-exam_date")
             serializer = ExamSerializer(queryset, many=True)
             data = serializer.data
             for ex in data:
@@ -23,7 +26,9 @@ def exams_view(request):
                 ex["marks"] = [m for m in ex.get("marks", []) if m.get("student") == str(s_doc.id)]
             return Response(data)
         else:
-            queryset = Exam.objects.all().order_by("-exam_date")
+            queryset = Exam.objects.all().prefetch_related(
+                Prefetch("marks", queryset=ExamMark.objects.all().select_related("student"))
+            ).order_by("-exam_date")
             if request.user.role != "developer":
                 queryset = queryset.filter(coaching_center=request.user.coaching_center)
             serializer = ExamSerializer(queryset, many=True)

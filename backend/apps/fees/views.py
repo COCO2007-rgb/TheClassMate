@@ -16,9 +16,9 @@ def payments_view(request):
     if request.method == "GET":
         s_doc = get_user_student(request.user)
         if s_doc:
-            queryset = Payment.objects.filter(student=s_doc).order_by("-date")
+            queryset = Payment.objects.filter(student=s_doc).select_related("student").order_by("-date")
         else:
-            queryset = Payment.objects.all().order_by("-date")
+            queryset = Payment.objects.all().select_related("student").order_by("-date")
             if request.user.role != "developer":
                 queryset = queryset.filter(coaching_center=request.user.coaching_center)
                 

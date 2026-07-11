@@ -1,3 +1,4 @@
+from django.db.models import Prefetch
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -17,7 +18,9 @@ def homework_view(request):
     if request.method == "GET":
         s_doc = get_user_student(request.user)
         if s_doc:
-            queryset = Homework.objects.filter(batch__in=s_doc.batches.all()).order_by("due")
+            queryset = Homework.objects.filter(batch__in=s_doc.batches.all()).prefetch_related(
+                Prefetch("submissions", queryset=HomeworkSubmission.objects.filter(student=s_doc).select_related("student"))
+            ).order_by("due")
             # We want to serialize homework, but only serialize submissions that belong to this student
             serializer = HomeworkSerializer(queryset, many=True)
             data = serializer.data
@@ -25,7 +28,9 @@ def homework_view(request):
                 hw["submissions"] = [sub for sub in hw.get("submissions", []) if sub.get("student") == str(s_doc.id)]
             return Response(data)
         else:
-            queryset = Homework.objects.all().order_by("due")
+            queryset = Homework.objects.all().prefetch_related(
+                Prefetch("submissions", queryset=HomeworkSubmission.objects.all().select_related("student"))
+            ).order_by("due")
             if request.user.role != "developer":
                 queryset = queryset.filter(coaching_center=request.user.coaching_center)
             serializer = HomeworkSerializer(queryset, many=True)
