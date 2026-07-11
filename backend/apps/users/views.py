@@ -6,7 +6,7 @@ from django.contrib.auth.hashers import make_password, check_password
 from django.db import transaction
 from django.db.models import Q
 from rest_framework import status
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.decorators import api_view, permission_classes, authentication_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -38,6 +38,7 @@ def generate_jwt_token(user):
 
 @api_view(["POST"])
 @permission_classes([AllowAny])
+@authentication_classes([])
 def login_view(request):
     email_or_id = request.data.get("email")
     password = request.data.get("password")
@@ -72,6 +73,7 @@ def login_view(request):
 
 @api_view(["POST"])
 @permission_classes([AllowAny])
+@authentication_classes([])
 def register_admin_view(request):
     email = request.data.get("email")
     password = request.data.get("password")
@@ -117,6 +119,7 @@ def profile_view(request):
 
 @api_view(["POST"])
 @permission_classes([AllowAny])
+@authentication_classes([])
 def parent_send_otp_view(request):
     email = request.data.get("email")
     batch_code = request.data.get("batch_code")
@@ -180,6 +183,7 @@ def parent_send_otp_view(request):
 
 @api_view(["POST"])
 @permission_classes([AllowAny])
+@authentication_classes([])
 def parent_verify_otp_view(request):
     email = request.data.get("email")
     otp_code = request.data.get("otp_code")
@@ -308,6 +312,7 @@ def change_password_view(request):
 
 @api_view(["POST"])
 @permission_classes([AllowAny])
+@authentication_classes([])
 def forgot_password_send_otp_view(request):
     email_or_phone = request.data.get("email_or_phone")
     if not email_or_phone:
@@ -373,6 +378,7 @@ def forgot_password_send_otp_view(request):
 
 @api_view(["POST"])
 @permission_classes([AllowAny])
+@authentication_classes([])
 def forgot_password_verify_otp_view(request):
     mobile = request.data.get("mobile")
     otp_code = request.data.get("otp_code")
@@ -396,6 +402,7 @@ def forgot_password_verify_otp_view(request):
 
 @api_view(["POST"])
 @permission_classes([AllowAny])
+@authentication_classes([])
 def forgot_password_reset_view(request):
     mobile = request.data.get("mobile")
     otp_code = request.data.get("otp_code")
