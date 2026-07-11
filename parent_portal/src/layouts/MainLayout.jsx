@@ -21,6 +21,8 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
+import api from '../services/api';
+
 const MainLayout = ({ children }) => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
@@ -30,6 +32,19 @@ const MainLayout = ({ children }) => {
   const [showNotifications, setShowNotifications] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [settings, setSettings] = useState(null);
+
+  React.useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        const response = await api.get('/settings/');
+        setSettings(response.data);
+      } catch (err) {
+        console.error('Failed to fetch settings:', err);
+      }
+    };
+    fetchSettings();
+  }, []);
 
   React.useEffect(() => {
     const handleResize = () => {
@@ -102,7 +117,7 @@ const MainLayout = ({ children }) => {
                 animate={{ opacity: 1 }}
                 className="font-bold text-sm uppercase tracking-wider text-accent flex items-center"
               >
-                <ShieldCheck size={18} className="mr-2 text-accent" /> PARENT PORTAL
+                <ShieldCheck size={18} className="mr-2 text-accent" /> THECLASSMATE
               </motion.span>
             )}
             {collapsed && !isMobile && (
@@ -169,8 +184,14 @@ const MainLayout = ({ children }) => {
                 <Menu size={20} />
               </button>
             )}
-            <h2 className="text-sm font-extrabold text-accent flex items-center tracking-wider">
-              THECLASSMATE <span className="mx-2 text-gray-400 dark:text-gray-600 font-normal">|</span> <span className="text-gray-800 dark:text-white font-bold">{location.pathname === '/' ? 'Parent Portal Home' : location.pathname.substring(1).toUpperCase().replace('-', ' ')}</span>
+            <h2 className="text-sm font-extrabold text-accent flex items-center tracking-wider uppercase">
+              {settings?.name || 'APEX COACHING ACADEMY'}
+              {location.pathname !== '/' && (
+                <>
+                  <span className="mx-2 text-gray-400 dark:text-gray-600 font-normal">|</span>
+                  <span className="text-gray-800 dark:text-white font-bold">{location.pathname.substring(1).toUpperCase().replace('-', ' ')}</span>
+                </>
+              )}
             </h2>
           </div>
 
