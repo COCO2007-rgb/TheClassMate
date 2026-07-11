@@ -15,9 +15,11 @@ import {
   ChevronRight,
   Bell,
   User,
-  ShieldCheck
+  ShieldCheck,
+  Menu,
+  X
 } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const MainLayout = ({ children }) => {
   const { user, logout } = useAuth();
@@ -26,6 +28,23 @@ const MainLayout = ({ children }) => {
   const [collapsed, setCollapsed] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  React.useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+      if (window.innerWidth >= 768) {
+        setMobileMenuOpen(false);
+      }
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  React.useEffect(() => {
+    setMobileMenuOpen(false);
+  }, [location.pathname]);
 
   // Simulating parent notifications
   const [notifications] = useState([
@@ -50,16 +69,34 @@ const MainLayout = ({ children }) => {
   return (
     <div className="min-h-screen flex bg-gray-50 dark:bg-[#0B132B] text-black dark:text-white transition-colors duration-300">
       
+      {/* Semi-transparent overlay on mobile */}
+      <AnimatePresence>
+        {isMobile && mobileMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 0.5 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setMobileMenuOpen(false)}
+            className="fixed inset-0 bg-black z-30 cursor-pointer"
+          />
+        )}
+      </AnimatePresence>
+
       {/* Sidebar */}
       <motion.aside
-        animate={{ width: collapsed ? 72 : 260 }}
+        initial={isMobile ? { x: -260 } : {}}
+        animate={
+          isMobile 
+            ? { x: mobileMenuOpen ? 0 : -260, width: 260 } 
+            : { width: collapsed ? 72 : 260 }
+        }
         transition={{ duration: 0.2 }}
-        className="fixed top-0 bottom-0 left-0 bg-[#14213D] text-white flex flex-col justify-between z-30 shadow-lg border-r border-[#1d2d4f]"
+        className="fixed top-0 bottom-0 left-0 bg-[#14213D] text-white flex flex-col justify-between z-45 shadow-lg border-r border-[#1d2d4f]"
       >
         <div>
           {/* Logo / Brand Header */}
           <div className="h-16 flex items-center justify-between px-4 border-b border-[#1d2d4f] overflow-hidden">
-            {!collapsed && (
+            {(!collapsed || isMobile) && (
               <motion.span
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -68,10 +105,18 @@ const MainLayout = ({ children }) => {
                 <ShieldCheck size={18} className="mr-2 text-accent" /> PARENT PORTAL
               </motion.span>
             )}
-            {collapsed && (
+            {collapsed && !isMobile && (
               <div className="w-full flex justify-center text-accent">
                 <ShieldCheck size={22} />
               </div>
+            )}
+            {isMobile && (
+              <button
+                onClick={() => setMobileMenuOpen(false)}
+                className="p-1 text-gray-450 hover:text-white cursor-pointer"
+              >
+                <X size={16} />
+              </button>
             )}
           </div>
 
@@ -86,7 +131,7 @@ const MainLayout = ({ children }) => {
                   className={`flex items-center p-2.5 rounded-lg text-xs font-semibold transition-all group hover:bg-[#1d2d4f] ${isActive ? 'bg-accent text-[#14213D]' : 'text-gray-300 group-hover:text-white'}`}
                 >
                   <item.icon size={16} className={`flex-shrink-0 ${isActive ? 'text-[#14213D]' : 'text-gray-400 group-hover:text-white'}`} />
-                  {!collapsed && (
+                  {(!collapsed || isMobile) && (
                     <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="ml-3">
                       {item.name}
                     </motion.span>
@@ -98,24 +143,36 @@ const MainLayout = ({ children }) => {
         </div>
 
         {/* Sidebar Footer Controls */}
-        <div className="p-3 border-t border-[#1d2d4f] flex flex-col space-y-2">
-          <button
-            onClick={() => setCollapsed(!collapsed)}
-            className="flex items-center justify-center p-2 rounded-lg bg-[#1d2d4f] hover:bg-[#283c66] text-gray-300 hover:text-white cursor-pointer"
-          >
-            {collapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
-          </button>
-        </div>
+        {!isMobile && (
+          <div className="p-3 border-t border-[#1d2d4f] flex flex-col space-y-2">
+            <button
+              onClick={() => setCollapsed(!collapsed)}
+              className="flex items-center justify-center p-2 rounded-lg bg-[#1d2d4f] hover:bg-[#283c66] text-gray-300 hover:text-white cursor-pointer"
+            >
+              {collapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
+            </button>
+          </div>
+        )}
       </motion.aside>
 
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col min-w-0" style={{ paddingLeft: collapsed ? 72 : 260 }}>
+      <div className="flex-1 flex flex-col min-w-0" style={{ paddingLeft: isMobile ? 0 : (collapsed ? 72 : 260) }}>
         
         {/* Header bar */}
         <header className="h-16 bg-white dark:bg-primary border-b border-gray-200 dark:border-gray-800 sticky top-0 flex items-center justify-between px-6 z-20 shadow-sm transition-colors">
-          <h2 className="text-sm font-extrabold text-accent flex items-center tracking-wider">
-            THECLASSMATE <span className="mx-2 text-gray-400 dark:text-gray-600 font-normal">|</span> <span className="text-gray-800 dark:text-white font-bold">{location.pathname === '/' ? 'Parent Portal Home' : location.pathname.substring(1).toUpperCase().replace('-', ' ')}</span>
-          </h2>
+          <div className="flex items-center space-x-3">
+            {isMobile && (
+              <button
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                className="p-1.5 rounded-lg text-gray-500 hover:bg-gray-100 dark:text-gray-450 dark:hover:bg-gray-800 cursor-pointer flex items-center justify-center mr-1"
+              >
+                <Menu size={20} />
+              </button>
+            )}
+            <h2 className="text-sm font-extrabold text-accent flex items-center tracking-wider">
+              THECLASSMATE <span className="mx-2 text-gray-400 dark:text-gray-600 font-normal">|</span> <span className="text-gray-800 dark:text-white font-bold">{location.pathname === '/' ? 'Parent Portal Home' : location.pathname.substring(1).toUpperCase().replace('-', ' ')}</span>
+            </h2>
+          </div>
 
           <div className="flex items-center space-x-4">
             
