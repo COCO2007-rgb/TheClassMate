@@ -5,10 +5,10 @@ import Leaderboard from '../components/Leaderboard';
 import { useAuth } from '../context/AuthContext';
 
 const Exams = () => {
-  const { child } = useAuth();
-  const [exams, setExams] = useState([]);
-  const [selectedExam, setSelectedExam] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const { child, cache, updateCache } = useAuth();
+  const [exams, setExams] = useState(cache.exams || []);
+  const [selectedExam, setSelectedExam] = useState(cache.exams && cache.exams.length > 0 ? cache.exams[0] : null);
+  const [loading, setLoading] = useState(!cache.exams);
 
   const fetchExams = async () => {
     try {
@@ -16,7 +16,8 @@ const Exams = () => {
         // Fetch exams
         const exRes = await api.get('/exams/');
         setExams(exRes.data);
-        if (exRes.data.length > 0) {
+        updateCache('exams', exRes.data);
+        if (exRes.data.length > 0 && !selectedExam) {
           setSelectedExam(exRes.data[0]);
         }
       }

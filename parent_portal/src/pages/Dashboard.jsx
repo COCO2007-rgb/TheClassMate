@@ -5,15 +5,15 @@ import { CalendarDays, Bookmark, Award, Bell, Sparkles, Receipt } from 'lucide-r
 import { motion } from 'framer-motion';
 
 const Dashboard = () => {
-  const { user } = useAuth();
-  const [stats, setStats] = useState({
+  const { user, cache, updateCache } = useAuth();
+  const [stats, setStats] = useState(cache.dashboard?.stats || {
     total_students: 1,
     total_batches: 0,
     today_attendance: '100%',
     fees_collected: 0
   });
-  const [notifications, setNotifications] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [notifications, setNotifications] = useState(cache.dashboard?.notifications || []);
+  const [loading, setLoading] = useState(!cache.dashboard);
 
   useEffect(() => {
     const fetchDashboard = async () => {
@@ -24,6 +24,7 @@ const Dashboard = () => {
         ]);
         setStats(statsRes.data);
         setNotifications(notifRes.data);
+        updateCache('dashboard', { stats: statsRes.data, notifications: notifRes.data });
       } catch (err) {
         console.error('Failed to load parent dashboard:', err);
       } finally {

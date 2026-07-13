@@ -6,10 +6,10 @@ import Modal from '../components/Modal';
 import { useAuth } from '../context/AuthContext';
 
 const Fees = () => {
-  const { child } = useAuth();
-  const [payments, setPayments] = useState([]);
-  const [settings, setSettings] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const { child, cache, updateCache } = useAuth();
+  const [payments, setPayments] = useState(cache.fees?.payments || []);
+  const [settings, setSettings] = useState(cache.fees?.settings || null);
+  const [loading, setLoading] = useState(!cache.fees);
 
   // Pay Fees Modal states
   const [isPayModalOpen, setIsPayModalOpen] = useState(false);
@@ -32,6 +32,7 @@ const Fees = () => {
         ]);
         setPayments(payRes.data);
         setSettings(settRes.data);
+        updateCache('fees', { payments: payRes.data, settings: settRes.data });
       } else {
         const settRes = await api.get('/settings/');
         setSettings(settRes.data);

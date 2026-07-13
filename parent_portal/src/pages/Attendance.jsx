@@ -4,18 +4,19 @@ import { Calendar, CheckCircle, XCircle, Clock, AlertTriangle } from 'lucide-rea
 import { useAuth } from '../context/AuthContext';
 
 const Attendance = () => {
-  const { child } = useAuth();
-  const [batches, setBatches] = useState([]);
+  const { child, cache, updateCache, updateAttendanceCache } = useAuth();
+  const [batches, setBatches] = useState(cache.batches || []);
   const [selectedBatch, setSelectedBatch] = useState('');
   const [history, setHistory] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!cache.batches);
 
   useEffect(() => {
     const fetchBatches = async () => {
       try {
         const response = await api.get('/batches/');
         setBatches(response.data);
-        if (response.data.length > 0) {
+        updateCache('batches', response.data);
+        if (response.data.length > 0 && !selectedBatch) {
           setSelectedBatch(response.data[0].id);
         }
       } catch (err) {
@@ -24,12 +25,26 @@ const Attendance = () => {
         setLoading(false);
       }
     };
-    fetchBatches();
+    if (!cache.batches) {
+      fetchBatches();
+    } else {
+      if (batches.length > 0 && !selectedBatch) {
+        setSelectedBatch(batches[0].id);
+      }
+    }
   }, []);
 
   const loadAttendanceHistory = async () => {
     if (!selectedBatch || !child) return;
-    setLoading(true);
+    
+    const cachedHistory = cache.attendance[selectedBatch];
+    if (cachedHistory) {
+      setHistory(cachedHistory);
+      setLoading(false);
+    } else {
+      setLoading(true);
+    }
+
     try {
       // Profile details are preloaded globally in AuthContext!
 
@@ -60,6 +75,7 @@ const Attendance = () => {
       const results = await Promise.all(promises);
       const recordsList = results.filter(r => r !== null);
       setHistory(recordsList.reverse());
+      updateAttendanceCache(selectedBatch, recordsList.reverse());
     } catch (err) {
       console.error('Failed to load attendance logs:', err);
     } finally {

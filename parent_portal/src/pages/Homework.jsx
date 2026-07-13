@@ -5,9 +5,9 @@ import Modal from '../components/Modal';
 import { useAuth } from '../context/AuthContext';
 
 const Homework = () => {
-  const { child } = useAuth();
-  const [homeworks, setHomeworks] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { child, cache, updateCache } = useAuth();
+  const [homeworks, setHomeworks] = useState(cache.homework || []);
+  const [loading, setLoading] = useState(!cache.homework);
 
   // Submission Modal state
   const [selectedHw, setSelectedHw] = useState(null);
@@ -21,6 +21,7 @@ const Homework = () => {
         // Fetch homework listings
         const hwRes = await api.get('/homework/');
         setHomeworks(hwRes.data);
+        updateCache('homework', hwRes.data);
       }
     } catch (err) {
       console.error('Failed to fetch parent homeworks:', err);

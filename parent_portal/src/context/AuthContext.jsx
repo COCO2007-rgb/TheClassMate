@@ -118,6 +118,34 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const [cache, setCache] = useState({
+    dashboard: null,
+    attendance: {},
+    batches: null,
+    homework: null,
+    exams: null,
+    fees: null,
+    settings: null,
+    reports: null
+  });
+
+  const updateCache = (key, value) => {
+    setCache((prev) => ({
+      ...prev,
+      [key]: value
+    }));
+  };
+
+  const updateAttendanceCache = (batchId, value) => {
+    setCache((prev) => ({
+      ...prev,
+      attendance: {
+        ...prev.attendance,
+        [batchId]: value
+      }
+    }));
+  };
+
   const completeRegistration = (token, userData) => {
     localStorage.setItem('theclassmate_token', token);
     localStorage.setItem('theclassmate_user', JSON.stringify(userData));
@@ -132,10 +160,20 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem('theclassmate_role');
     setToken(null);
     setUser(null);
+    setCache({
+      dashboard: null,
+      attendance: {},
+      batches: null,
+      homework: null,
+      exams: null,
+      fees: null,
+      settings: null,
+      reports: null
+    });
   };
 
   return (
-    <AuthContext.Provider value={{ token, user, child, login, loginSendOTP, loginVerifyOTP, requestOTP, verifyOTP, completeRegistration, logout, isAuthenticated: !!token, loading }}>
+    <AuthContext.Provider value={{ token, user, child, login, loginSendOTP, loginVerifyOTP, requestOTP, verifyOTP, completeRegistration, logout, isAuthenticated: !!token, loading, cache, updateCache, updateAttendanceCache }}>
       {children}
     </AuthContext.Provider>
   );
