@@ -42,7 +42,8 @@ def public_batch_detail(request, code):
         "subject": batch.subject,
         "schedule": batch.schedule,
         "fees": batch.fees,
-        "code": batch.code
+        "code": batch.code,
+        "coaching_center_name": batch.coaching_center.name if batch.coaching_center else "Apex Coaching Academy"
     })
 
 @api_view(["POST"])

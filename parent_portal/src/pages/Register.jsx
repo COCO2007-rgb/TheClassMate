@@ -125,7 +125,13 @@ const Register = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#14213D] py-12 px-4 flex items-center justify-center relative overflow-hidden">
+    <div className="min-h-screen bg-[#14213D] py-16 px-4 flex items-center justify-center relative overflow-hidden">
+      {/* Top Left Name and Logo */}
+      <div className="absolute top-6 left-6 flex items-center space-x-2.5 z-20">
+        <img src="/logo.jpg" alt="Logo" className="w-7 h-7 rounded-full border border-gray-700 object-cover" />
+        <span className="font-bold text-white tracking-wider text-xs font-sans">TheClassMate</span>
+      </div>
+
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(252,163,17,0.1),transparent_70%)] pointer-events-none"></div>
 
       <motion.div
@@ -137,13 +143,18 @@ const Register = () => {
           <div className="inline-flex p-3 rounded-xl bg-accent/10 text-accent mb-3">
             <ShieldCheck size={28} />
           </div>
-          <h2 className="text-2xl font-bold text-white tracking-tight">Student Self-Enrollment</h2>
+          <h2 className="text-xl font-bold text-white tracking-tight">
+            {batch?.coaching_center_name || 'Apex Coaching Academy'}
+          </h2>
+          <p className="text-[10px] text-accent font-extrabold uppercase tracking-widest mt-1">
+            Student Self-Enrollment
+          </p>
           {batch ? (
-            <p className="text-xs text-gray-400 mt-1">
+            <p className="text-xs text-gray-400 mt-2">
               You are enrolling in: <span className="font-bold text-accent">{batch.name}</span> ({batch.subject})
             </p>
           ) : (
-            <p className="text-xs text-red-400 mt-1 font-bold">
+            <p className="text-xs text-red-400 mt-2 font-bold">
               Warning: Invite batch code parameter not resolved or expired.
             </p>
           )}

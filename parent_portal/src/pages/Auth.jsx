@@ -225,6 +225,12 @@ const Auth = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#14213D] px-4 relative overflow-hidden">
+      {/* Top Left Name and Logo */}
+      <div className="absolute top-6 left-6 flex items-center space-x-2.5 z-20">
+        <img src="/logo.jpg" alt="Logo" className="w-7 h-7 rounded-full border border-gray-700 object-cover" />
+        <span className="font-bold text-white tracking-wider text-xs font-sans">TheClassMate</span>
+      </div>
+
       {/* Background Accent Gradients */}
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(252,163,17,0.1),transparent_70%)] pointer-events-none"></div>
 
