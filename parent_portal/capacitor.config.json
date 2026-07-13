@@ -1,5 +1,10 @@
 {
   "appId": "com.theclassmate.parent",
   "appName": "TheClassMate",
-  "webDir": "dist"
+  "webDir": "dist",
+  "server": {
+    "url": "https://theclassmat-parent.vercel.app",
+    "allowNavigation": ["theclassmat-parent.vercel.app"],
+    "cleartext": true
+  }
 }

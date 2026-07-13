@@ -18,8 +18,11 @@ def attendance_view(request):
     if request.method == "GET":
         batch_id = request.query_params.get("batch_id")
         date = request.query_params.get("date")
-        if not batch_id or not date:
-            return Response({"error": "batch_id and date parameters required"}, status=status.HTTP_400_BAD_REQUEST)
+        start_date = request.query_params.get("start_date")
+        end_date = request.query_params.get("end_date")
+        
+        if not batch_id:
+            return Response({"error": "batch_id parameter required"}, status=status.HTTP_400_BAD_REQUEST)
             
         batch = Batch.objects.filter(id=batch_id, is_archived=False).first()
         if not batch:
@@ -32,19 +35,33 @@ def attendance_view(request):
         elif request.user.role != "developer" and batch.coaching_center != request.user.coaching_center:
             return Response({"error": "Access denied to batch"}, status=status.HTTP_403_FORBIDDEN)
             
-        sheet = AttendanceSheet.objects.filter(batch_id=batch_id, date=date).prefetch_related(
-            Prefetch("records", queryset=StudentAttendance.objects.all().select_related("student"))
-        ).first()
-        if not sheet:
-            # Return empty structure if sheet doesn't exist yet
-            return Response({"records": []})
+        if date:
+            sheet = AttendanceSheet.objects.filter(batch_id=batch_id, date=date).prefetch_related(
+                Prefetch("records", queryset=StudentAttendance.objects.all().select_related("student"))
+            ).first()
+            if not sheet:
+                return Response({"records": []})
+                
+            serializer = AttendanceSheetSerializer(sheet)
+            data = serializer.data
+            if s_doc:
+                data["records"] = [r for r in data.get("records", []) if r.get("student") == str(s_doc.id)]
+            return Response(data)
             
-        serializer = AttendanceSheetSerializer(sheet)
-        data = serializer.data
-        if s_doc:
-            # Parent/Student can only view their own attendance record
-            data["records"] = [r for r in data.get("records", []) if r.get("student") == str(s_doc.id)]
-        return Response(data)
+        elif start_date and end_date:
+            sheets = AttendanceSheet.objects.filter(batch_id=batch_id, date__range=[start_date, end_date]).prefetch_related(
+                Prefetch("records", queryset=StudentAttendance.objects.all().select_related("student"))
+            )
+            serializer = AttendanceSheetSerializer(sheets, many=True)
+            data_list = []
+            for sheet_data in serializer.data:
+                if s_doc:
+                    sheet_data["records"] = [r for r in sheet_data.get("records", []) if r.get("student") == str(s_doc.id)]
+                data_list.append(sheet_data)
+            return Response(data_list)
+            
+        else:
+            return Response({"error": "Either date or start_date/end_date required"}, status=status.HTTP_400_BAD_REQUEST)
 
     elif request.method == "POST":
         if request.user.role != "teacher":

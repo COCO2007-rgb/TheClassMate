@@ -48,34 +48,28 @@ const Attendance = () => {
     try {
       // Profile details are preloaded globally in AuthContext!
 
-      // Simulate queries attendance logs over dates
-      const dates = [
-        '2026-07-01', '2026-07-02', '2026-07-03', '2026-07-04', '2026-07-05'
-      ];
+      const start_date = '2026-07-01';
+      const end_date = '2026-07-05';
+      const res = await api.get(`/attendance/?batch_id=${selectedBatch}&start_date=${start_date}&end_date=${end_date}`);
       
-      const promises = dates.map(async (d) => {
-        try {
-          const res = await api.get(`/attendance/?batch_id=${selectedBatch}&date=${d}`);
-          if (res.data && res.data.records) {
-            const childRec = res.data.records.find(r => r.student_id === child.id);
-            if (childRec) {
-              return {
-                date: d,
-                status: childRec.status,
-                remarks: childRec.remarks || 'Normal class'
-              };
-            }
+      const recordsList = [];
+      if (Array.isArray(res.data)) {
+        res.data.forEach(sheet => {
+          if (sheet.records && sheet.records.length > 0) {
+            recordsList.push({
+              date: sheet.date,
+              status: sheet.records[0].status,
+              remarks: sheet.records[0].remarks || 'Normal class'
+            });
           }
-        } catch (e) {
-          // ignore date logs
-        }
-        return null;
-      });
+        });
+      }
+      
+      // Sort records by date descending
+      recordsList.sort((a, b) => new Date(b.date) - new Date(a.date));
 
-      const results = await Promise.all(promises);
-      const recordsList = results.filter(r => r !== null);
-      setHistory(recordsList.reverse());
-      updateAttendanceCache(selectedBatch, recordsList.reverse());
+      setHistory(recordsList);
+      updateAttendanceCache(selectedBatch, recordsList);
     } catch (err) {
       console.error('Failed to load attendance logs:', err);
     } finally {
