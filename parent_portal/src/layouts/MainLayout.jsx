@@ -65,11 +65,34 @@ const MainLayout = ({ children }) => {
     setMoreMenuOpen(false);
   }, [location.pathname]);
 
-  // Simulating parent notifications
-  const [notifications] = useState([
-    { id: 1, title: 'Exam Grade Posted', desc: 'Kinematics Unit Test grades are now live', time: '2h ago' },
-    { id: 2, title: 'Homework Assigned', desc: 'Kinematics Worksheet 1 assigned due Mon', time: '1d ago' }
-  ]);
+  const [notifications, setNotifications] = useState([]);
+
+  React.useEffect(() => {
+    const fetchNotifications = async () => {
+      try {
+        const response = await api.get('/notifications/');
+        setNotifications(response.data);
+      } catch (err) {
+        console.error('Failed to fetch notifications:', err);
+      }
+    };
+    if (child) {
+      fetchNotifications();
+    }
+  }, [child]);
+
+  React.useEffect(() => {
+    if (notifications.length > 0) {
+      const readState = sessionStorage.getItem('notifications_read');
+      if (readState !== 'true') {
+        setHasUnreadNotifications(true);
+      } else {
+        setHasUnreadNotifications(false);
+      }
+    } else {
+      setHasUnreadNotifications(false);
+    }
+  }, [notifications]);
 
   const navItems = [
     { name: 'Student Dashboard', path: '/', icon: LayoutDashboard },
@@ -198,7 +221,12 @@ const MainLayout = ({ children }) => {
             {/* Notifications Bell */}
             <div className="relative">
               <button
-                onClick={() => { setShowNotifications(!showNotifications); setShowProfile(false); setHasUnreadNotifications(false); }}
+                onClick={() => {
+                  setShowNotifications(!showNotifications);
+                  setShowProfile(false);
+                  setHasUnreadNotifications(false);
+                  sessionStorage.setItem('notifications_read', 'true');
+                }}
                 className="p-2 rounded-lg bg-gray-50 dark:bg-gray-855 hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-gray-700 cursor-pointer relative"
               >
                 <Bell size={18} />
@@ -215,13 +243,17 @@ const MainLayout = ({ children }) => {
                     <button onClick={() => setShowNotifications(false)} className="text-[10px] text-accent hover:underline cursor-pointer">dismiss</button>
                   </div>
                   <div className="mt-2 space-y-2 max-h-60 overflow-y-auto">
-                    {notifications.map((n) => (
-                      <div key={n.id} className="p-2 hover:bg-gray-50 dark:hover:bg-gray-855 rounded-lg text-left transition-colors">
-                        <h4 className="text-[11px] font-bold text-gray-800 dark:text-gray-200">{n.title}</h4>
-                        <p className="text-[10px] text-gray-500 dark:text-gray-400">{n.desc}</p>
-                        <span className="text-[8px] text-gray-400 dark:text-gray-550 mt-1 block">{n.time}</span>
-                      </div>
-                    ))}
+                    {notifications.length === 0 ? (
+                      <p className="text-[10px] text-gray-400 text-center py-4">No announcements yet</p>
+                    ) : (
+                      notifications.map((n) => (
+                        <div key={n.id} className="p-2 hover:bg-gray-50 dark:hover:bg-gray-855 rounded-lg text-left transition-colors">
+                          <h4 className="text-[11px] font-bold text-gray-800 dark:text-gray-200">{n.title}</h4>
+                          <p className="text-[10px] text-gray-500 dark:text-gray-400">{n.desc}</p>
+                          <span className="text-[8px] text-gray-400 dark:text-gray-550 mt-1 block">{n.timestamp}</span>
+                        </div>
+                      ))
+                    )}
                   </div>
                 </div>
               )}

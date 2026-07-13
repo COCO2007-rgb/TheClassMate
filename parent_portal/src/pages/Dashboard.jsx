@@ -134,7 +134,7 @@ const Dashboard = () => {
             notifications.map((n, index) => (
               <div key={n.id || index} className="p-3 bg-gray-50 dark:bg-gray-850 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl text-left transition-colors border border-gray-100 dark:border-gray-800">
                 <h4 className="text-xs font-bold text-gray-800 dark:text-gray-200">{n.title}</h4>
-                <p className="text-[10px] text-gray-500 dark:text-gray-450 mt-1 leading-relaxed">{n.description}</p>
+                <p className="text-[10px] text-gray-500 dark:text-gray-450 mt-1 leading-relaxed">{n.desc}</p>
                 <span className="text-[8px] text-gray-400 mt-1.5 block font-medium">{n.timestamp}</span>
               </div>
             ))
