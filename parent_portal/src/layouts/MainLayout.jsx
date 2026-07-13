@@ -88,7 +88,7 @@ const MainLayout = ({ children }) => {
   return (
     <div className="min-h-screen flex bg-gray-50 dark:bg-[#0B132B] text-black dark:text-white transition-colors duration-300">
       
-      {/* Semi-transparent overlay on mobile (kept for legacy support if needed) */}
+      {/* Semi-transparent overlay on mobile */}
       <AnimatePresence>
         {isMobile && mobileMenuOpen && (
           <motion.div
@@ -209,14 +209,14 @@ const MainLayout = ({ children }) => {
 
               {/* Notifications dropdown menu */}
               {showNotifications && (
-                <div className="absolute right-0 mt-2 w-72 bg-white dark:bg-primary border border-gray-200 dark:border-gray-800 rounded-xl shadow-lg p-3 z-50">
+                <div className="absolute right-0 mt-2 w-72 bg-white dark:bg-primary border border-gray-200 dark:border-gray-800 rounded-xl shadow-lg p-3 z-50 animate-fade-in">
                   <div className="flex items-center justify-between pb-2 border-b border-gray-100 dark:border-gray-850 text-xs">
                     <span className="font-bold text-gray-900 dark:text-white">Announcements</span>
                     <button onClick={() => setShowNotifications(false)} className="text-[10px] text-accent hover:underline cursor-pointer">dismiss</button>
                   </div>
                   <div className="mt-2 space-y-2 max-h-60 overflow-y-auto">
                     {notifications.map((n) => (
-                      <div key={n.id} className="p-2 hover:bg-gray-50 dark:hover:bg-gray-850 rounded-lg text-left transition-colors">
+                      <div key={n.id} className="p-2 hover:bg-gray-50 dark:hover:bg-gray-855 rounded-lg text-left transition-colors">
                         <h4 className="text-[11px] font-bold text-gray-800 dark:text-gray-200">{n.title}</h4>
                         <p className="text-[10px] text-gray-500 dark:text-gray-400">{n.desc}</p>
                         <span className="text-[8px] text-gray-400 dark:text-gray-550 mt-1 block">{n.time}</span>
@@ -242,9 +242,20 @@ const MainLayout = ({ children }) => {
           </div>
         </header>
 
-        {/* View content container */}
+        {/* View content container with smooth Page Transitions */}
         <main className={`p-6 flex-1 overflow-x-hidden ${isMobile ? 'pb-24' : ''}`}>
-          {children}
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={location.pathname}
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -12 }}
+              transition={{ duration: 0.22, ease: 'easeInOut' }}
+              className="w-full h-full flex flex-col"
+            >
+              {children}
+            </motion.div>
+          </AnimatePresence>
         </main>
         
       </div>
@@ -257,7 +268,7 @@ const MainLayout = ({ children }) => {
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-white dark:bg-[#14213D] border border-gray-200 dark:border-gray-800 rounded-2xl p-6 max-w-md w-full shadow-2xl relative text-gray-900 dark:text-white animate-fade-in"
+              className="bg-white dark:bg-[#14213D] border border-gray-200 dark:border-gray-800 rounded-2xl p-6 max-w-md w-full shadow-2xl relative text-gray-900 dark:text-white"
             >
               <button
                 onClick={() => setShowProfile(false)}
@@ -326,65 +337,43 @@ const MainLayout = ({ children }) => {
         )}
       </AnimatePresence>
 
-      {/* Mobile Bottom Navigation Bar */}
+      {/* Mobile Floating Bottom Capsule Navigation Bar */}
       {isMobile && (
-        <nav className="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-[#14213D] border-t border-[#1d2d4f] flex justify-around items-center z-40 px-2 shadow-2xl text-white">
-          <NavLink
-            to="/"
-            className={({ isActive }) =>
-              `flex flex-col items-center justify-center w-12 h-12 rounded-xl transition-all ${
-                isActive ? 'text-accent' : 'text-gray-400'
-              }`
-            }
-          >
-            <LayoutDashboard size={18} />
-            <span className="text-[9px] mt-0.5 font-bold">Home</span>
-          </NavLink>
-
-          <NavLink
-            to="/attendance"
-            className={({ isActive }) =>
-              `flex flex-col items-center justify-center w-12 h-12 rounded-xl transition-all ${
-                isActive ? 'text-accent' : 'text-gray-400'
-              }`
-            }
-          >
-            <CalendarDays size={18} />
-            <span className="text-[9px] mt-0.5 font-bold">Attendance</span>
-          </NavLink>
-
-          <NavLink
-            to="/homework"
-            className={({ isActive }) =>
-              `flex flex-col items-center justify-center w-12 h-12 rounded-xl transition-all ${
-                isActive ? 'text-accent' : 'text-gray-400'
-              }`
-            }
-          >
-            <BookOpen size={18} />
-            <span className="text-[9px] mt-0.5 font-bold">Homework</span>
-          </NavLink>
-
-          <NavLink
-            to="/exams"
-            className={({ isActive }) =>
-              `flex flex-col items-center justify-center w-12 h-12 rounded-xl transition-all ${
-                isActive ? 'text-accent' : 'text-gray-400'
-              }`
-            }
-          >
-            <Award size={18} />
-            <span className="text-[9px] mt-0.5 font-bold">Exams</span>
-          </NavLink>
+        <nav className="md:hidden fixed bottom-4 left-4 right-4 h-16 bg-[#14213D]/95 backdrop-blur-md border border-gray-800 rounded-2xl flex justify-around items-center z-40 px-2 shadow-[0_12px_30px_rgba(0,0,0,0.5)] text-white">
+          {navItems.slice(0, 4).map((item) => {
+            const isActive = location.pathname === item.path;
+            return (
+              <NavLink
+                key={item.name}
+                to={item.path}
+                className="relative flex flex-col items-center justify-center w-12 h-12 rounded-xl transition-all cursor-pointer"
+              >
+                {isActive && (
+                  <motion.div
+                    layoutId="activeTabMobile"
+                    className="absolute inset-0 bg-[#FCA311]/15 border border-[#FCA311]/30 rounded-xl"
+                    transition={{ type: 'spring', damping: 20, stiffness: 200 }}
+                  />
+                )}
+                <item.icon size={18} className={isActive ? 'text-[#FCA311] relative z-10' : 'text-gray-400 relative z-10'} />
+                <span className={`text-[8px] mt-0.5 font-bold relative z-10 ${isActive ? 'text-[#FCA311]' : 'text-gray-400'}`}>
+                  {item.name.replace('Student ', '').replace(' Grid', '').replace(' Uploads', '').replace(' Rankings', '')}
+                </span>
+              </NavLink>
+            );
+          })}
 
           <button
             onClick={() => setMoreMenuOpen(true)}
-            className={`flex flex-col items-center justify-center w-12 h-12 rounded-xl transition-all ${
-              moreMenuOpen ? 'text-accent' : 'text-gray-400'
-            }`}
+            className="relative flex flex-col items-center justify-center w-12 h-12 rounded-xl transition-all cursor-pointer"
           >
-            <Menu size={18} />
-            <span className="text-[9px] mt-0.5 font-bold">More</span>
+            {moreMenuOpen && (
+              <div className="absolute inset-0 bg-[#FCA311]/15 border border-[#FCA311]/30 rounded-xl" />
+            )}
+            <Menu size={18} className={moreMenuOpen ? 'text-[#FCA311] relative z-10' : 'text-gray-400 relative z-10'} />
+            <span className={`text-[8px] mt-0.5 font-bold relative z-10 ${moreMenuOpen ? 'text-[#FCA311]' : 'text-gray-400'}`}>
+              More
+            </span>
           </button>
         </nav>
       )}
