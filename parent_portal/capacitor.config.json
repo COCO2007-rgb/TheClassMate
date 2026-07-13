@@ -3,8 +3,8 @@
   "appName": "TheClassMate",
   "webDir": "dist",
   "server": {
-    "url": "https://theclassmat-parent.vercel.app",
-    "allowNavigation": ["theclassmat-parent.vercel.app"],
+    "url": "https://parent-portal-lovat.vercel.app",
+    "allowNavigation": ["parent-portal-lovat.vercel.app"],
     "cleartext": true
   }
 }
