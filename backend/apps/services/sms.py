@@ -78,7 +78,8 @@ def send_sms_via_twilio(mobile, otp_code):
     req.add_header("Content-Type", "application/x-www-form-urlencoded")
     
     try:
-        with urllib.request.urlopen(req) as response:
+        # Enforce a strict 2.0s timeout to prevent requests from blocking the process for 10-12s on firewall/DNS issues
+        with urllib.request.urlopen(req, timeout=2.0) as response:
             logger.info(f"SMS successfully sent to {to_number} via Twilio.")
             return True, {
                 "message": "SMS sent successfully via Twilio",
