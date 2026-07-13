@@ -56,6 +56,18 @@ jobs:
           name: TheClassMate-Parent-App
           path: parent_portal/android/app/build/outputs/apk/debug/app-debug.apk
 
+      - name: Upload APK to Public GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: latest-apk
+          name: Latest Parent Portal APK
+          body: |
+            This is the latest compiled debug APK of the Parent Portal.
+            - Automatically loads updates from: https://theclassmat-parent.vercel.app
+          files: parent_portal/android/app/build/outputs/apk/debug/app-debug.apk
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Commit and push logs on failure
         if: failure()
         run: |
