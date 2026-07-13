@@ -42,7 +42,7 @@ jobs:
       - name: Sync with Capacitor
         run: |
           cd parent_portal
-          npx cap sync android --verbose > capacitor-sync.log 2>&1 || (cat capacitor-sync.log && exit 1)
+          npx cap sync android > capacitor-sync.log 2>&1 || (cat capacitor-sync.log && exit 1)
 
       - name: Build Android Debug APK
         run: |
