@@ -348,6 +348,16 @@ const Auth = () => {
                 <span>{loading ? 'Authenticating...' : 'Sign In'}</span>
                 {!loading && <ArrowRight size={14} />}
               </button>
+
+              <div className="text-center mt-4 border-t border-gray-800/40 pt-4">
+                <button
+                  type="button"
+                  onClick={() => { setStep(3); setError(''); setSuccess(''); }}
+                  className="text-xs text-accent hover:underline font-bold"
+                >
+                  Don't have an account? Sign Up
+                </button>
+              </div>
             </motion.form>
           )}
 
@@ -362,7 +372,7 @@ const Auth = () => {
             >
               <div className="p-3 bg-accent/10 border border-accent/20 rounded-lg text-[11px] text-accent flex items-center space-x-2">
                 <UserCheck size={16} />
-                <span>Verification complete. Let's finish building your profile.</span>
+                <span>Join your coaching batch. Enter your profile details below.</span>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
@@ -472,6 +482,16 @@ const Auth = () => {
                 <span>{loading ? 'Completing Setup...' : 'Register Profile & Log In'}</span>
                 {!loading && <ArrowRight size={14} />}
               </button>
+
+              <div className="text-center mt-4 border-t border-gray-800/40 pt-4">
+                <button
+                  type="button"
+                  onClick={() => { setStep(1); setError(''); setSuccess(''); }}
+                  className="text-xs text-accent hover:underline font-bold"
+                >
+                  Already have an account? Sign In
+                </button>
+              </div>
             </motion.form>
           )}
         </AnimatePresence>
