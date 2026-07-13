@@ -22,14 +22,15 @@ def dashboard_stats_view(request):
         fees_sum = Payment.objects.filter(student=s_doc).aggregate(total=Sum("amount"))["total"]
         collected = fees_sum if fees_sum is not None else 0.0
         
-        # Calculate attendance rate
+        # Calculate attendance rate in a single database roundtrip
         student_batches = s_doc.batches.filter(is_archived=False)
-        working = StudentAttendance.objects.filter(sheet__batch__in=student_batches, student=s_doc).count()
-        present = StudentAttendance.objects.filter(
+        attendance_records = list(StudentAttendance.objects.filter(
             sheet__batch__in=student_batches,
-            student=s_doc,
-            status__in=["Present", "Late", "Half Day"]
-        ).count()
+            student=s_doc
+        ).values_list("status", flat=True))
+        
+        working = len(attendance_records)
+        present = sum(1 for status in attendance_records if status in ["Present", "Late", "Half Day"])
         
         att_rate = f"{round((present / working) * 100)}%" if working > 0 else "100%"
         

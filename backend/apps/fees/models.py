@@ -12,6 +12,7 @@ class Payment(BaseModel):
     paid_date = models.CharField(max_length=50, blank=True, null=True)  # YYYY-MM-DD
     status = models.CharField(max_length=50, default="paid")  # paid, unpaid, pending
     payment_method = models.CharField(max_length=50, default="UPI")  # UPI, Cash, Online
+    month = models.CharField(max_length=50, blank=True, null=True)
     receipt_id = models.CharField(max_length=100, unique=True)
     remarks = models.TextField(blank=True, null=True)
 

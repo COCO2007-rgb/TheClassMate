@@ -37,7 +37,7 @@ def homework_view(request):
             return Response(serializer.data)
 
     elif request.method == "POST":
-        if request.user.role != "teacher":
+        if request.user.role not in ["teacher", "developer"]:
             return Response({"error": "Access denied"}, status=status.HTTP_403_FORBIDDEN)
             
         data = request.data.copy()

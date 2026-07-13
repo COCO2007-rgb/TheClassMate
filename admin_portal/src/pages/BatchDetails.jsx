@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../services/api';
-import { ArrowLeft, Users, Award, Trash2, Eye, Edit } from 'lucide-react';
+import { ArrowLeft, Users, Award, Trash2, Eye, Edit, X } from 'lucide-react';
 import Leaderboard from '../components/Leaderboard';
 import Modal from '../components/Modal';
 
@@ -11,6 +11,7 @@ const BatchDetails = () => {
   const [batch, setBatch] = useState(null);
   const [students, setStudents] = useState([]);
   const [exams, setExams] = useState([]);
+  const [selectedStudentForProfile, setSelectedStudentForProfile] = useState(null);
   
   const [activeTab, setActiveTab] = useState('students');
   const [loading, setLoading] = useState(true);
@@ -138,7 +139,12 @@ const BatchDetails = () => {
                     students.map((student, index) => (
                       <tr key={student.id || index} className="hover:bg-gray-50/50 dark:hover:bg-gray-850/30 transition-all">
                         <td className="p-4 font-bold text-primary dark:text-accent font-mono">{student.student_id}</td>
-                        <td className="p-4 font-bold text-gray-900 dark:text-white">{student.name} {student.surname || ''}</td>
+                        <td 
+                          onClick={() => setSelectedStudentForProfile(student)}
+                          className="p-4 font-bold text-gray-900 dark:text-white hover:text-accent cursor-pointer transition-colors"
+                        >
+                          {student.name} {student.surname || ''}
+                        </td>
                         <td className="p-4 text-gray-600 dark:text-gray-350">{student.student_contact || student.mobile}</td>
                         <td className="p-4 text-gray-600 dark:text-gray-350">{student.parent_contact || 'N/A'}</td>
                         <td className="p-4 text-gray-500 dark:text-gray-400">{student.joining_date || 'N/A'}</td>
@@ -149,7 +155,7 @@ const BatchDetails = () => {
                         </td>
                         <td className="p-4 text-right flex items-center justify-end space-x-2">
                           <button
-                            onClick={() => navigate('/students')}
+                            onClick={() => setSelectedStudentForProfile(student)}
                             className="p-1.5 text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-950/20 rounded cursor-pointer"
                             title="View Student"
                           >
@@ -225,6 +231,63 @@ const BatchDetails = () => {
         )}
       </div>
 
+      {/* Student Profile Modal */}
+      {selectedStudentForProfile && (
+        <Modal 
+          isOpen={true} 
+          onClose={() => setSelectedStudentForProfile(null)} 
+          title="Student Profile Details"
+        >
+          <div className="space-y-4">
+            <div className="flex items-center space-x-3 pb-3 border-b border-gray-100 dark:border-gray-800">
+              <div className="w-10 h-10 rounded-full bg-accent/15 text-accent flex items-center justify-center text-sm font-bold">
+                {selectedStudentForProfile.name?.charAt(0) || "S"}
+              </div>
+              <div className="text-left">
+                <h3 className="text-sm font-bold text-gray-900 dark:text-white">
+                  {selectedStudentForProfile.name} {selectedStudentForProfile.surname || ""}
+                </h3>
+                <p className="text-[10px] text-gray-400 font-mono">ID: {selectedStudentForProfile.student_id}</p>
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-2 gap-3.5 text-xs text-left">
+              <div>
+                <span className="text-[10px] text-gray-400 block font-bold uppercase tracking-wider">Gender</span>
+                <span className="font-bold text-gray-800 dark:text-gray-200">{selectedStudentForProfile.gender || "N/A"}</span>
+              </div>
+              <div>
+                <span className="text-[10px] text-gray-400 block font-bold uppercase tracking-wider">Date of Birth</span>
+                <span className="font-bold text-gray-800 dark:text-gray-200">{selectedStudentForProfile.dob || "N/A"}</span>
+              </div>
+              <div>
+                <span className="text-[10px] text-gray-400 block font-bold uppercase tracking-wider">Student Contact</span>
+                <span className="font-bold text-gray-800 dark:text-gray-200">{selectedStudentForProfile.student_contact || selectedStudentForProfile.mobile || "N/A"}</span>
+              </div>
+              <div>
+                <span className="text-[10px] text-gray-400 block font-bold uppercase tracking-wider">Parent Contact</span>
+                <span className="font-bold text-gray-800 dark:text-gray-200">{selectedStudentForProfile.parent_contact || "N/A"}</span>
+              </div>
+              <div>
+                <span className="text-[10px] text-gray-400 block font-bold uppercase tracking-wider">Joining Date</span>
+                <span className="font-bold text-gray-800 dark:text-gray-200">{selectedStudentForProfile.joining_date || "N/A"}</span>
+              </div>
+              <div>
+                <span className="text-[10px] text-gray-400 block font-bold uppercase tracking-wider">Status</span>
+                <span className="text-emerald-500 font-bold uppercase text-[10px]">Active</span>
+              </div>
+              <div className="col-span-2">
+                <span className="text-[10px] text-gray-400 block font-bold uppercase tracking-wider">Address</span>
+                <span className="font-bold text-gray-800 dark:text-gray-200">{selectedStudentForProfile.address || "N/A"}</span>
+              </div>
+              <div className="col-span-2">
+                <span className="text-[10px] text-gray-400 block font-bold uppercase tracking-wider">Enrolled Batch</span>
+                <span className="font-bold text-accent">{batch.name}</span>
+              </div>
+            </div>
+          </div>
+        </Modal>
+      )}
     </div>
   );
 };

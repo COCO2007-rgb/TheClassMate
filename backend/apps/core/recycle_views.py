@@ -12,7 +12,7 @@ from notifications.serializers import RecycleBinSerializer
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def recycle_bin_view(request):
-    if request.user.role != "teacher":
+    if request.user.role not in ["teacher", "developer"]:
         return Response({"error": "Access denied"}, status=403)
         
     queryset = RecycleBin.objects.all()
@@ -25,7 +25,7 @@ def recycle_bin_view(request):
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def recycle_restore_view(request):
-    if request.user.role != "teacher":
+    if request.user.role not in ["teacher", "developer"]:
         return Response({"error": "Access denied"}, status=403)
         
     item_id = request.data.get("item_id")
@@ -55,7 +55,7 @@ def recycle_restore_view(request):
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def recycle_purge_view(request):
-    if request.user.role != "teacher":
+    if request.user.role not in ["teacher", "developer"]:
         return Response({"error": "Access denied"}, status=403)
         
     item_id = request.data.get("item_id")

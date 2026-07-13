@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import api from '../services/api';
 import { Award, Save, Calendar, CheckSquare, AlertCircle, FileSpreadsheet } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
 const Grades = () => {
+  const { role } = useAuth();
   const [exams, setExams] = useState([]);
   const [selectedExamId, setSelectedExamId] = useState('');
   const [selectedExam, setSelectedExam] = useState(null);
@@ -12,6 +14,10 @@ const Grades = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
+  // Branch states for developers
+  const [branches, setBranches] = useState([]);
+  const [selectedBranchId, setSelectedBranchId] = useState('');
+
   // Grades & Attendance States
   const [attendance, setAttendance] = useState({});
   const [scores, setScores] = useState({});
@@ -20,12 +26,21 @@ const Grades = () => {
     try {
       const exRes = await api.get('/exams/');
       setExams(exRes.data);
-      if (exRes.data.length > 0) {
-        setSelectedExamId(exRes.data[0].id);
-      }
 
       const studRes = await api.get('/students/');
       setStudents(studRes.data);
+
+      if (role === 'developer') {
+        const branchRes = await api.get('/developer/centers/');
+        setBranches(branchRes.data);
+        if (branchRes.data.length > 0) {
+          setSelectedBranchId(branchRes.data[0].id.toString());
+        }
+      } else {
+        if (exRes.data.length > 0) {
+          setSelectedExamId(exRes.data[0].id);
+        }
+      }
     } catch (err) {
       console.error('Failed to load data:', err);
     } finally {
@@ -35,7 +50,18 @@ const Grades = () => {
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [role]);
+
+  useEffect(() => {
+    if (role === 'developer' && selectedBranchId) {
+      const branchExams = exams.filter(e => String(e.coaching_center) === String(selectedBranchId));
+      if (branchExams.length > 0) {
+        setSelectedExamId(branchExams[0].id);
+      } else {
+        setSelectedExamId('');
+      }
+    }
+  }, [selectedBranchId, exams, role]);
 
   useEffect(() => {
     if (!selectedExamId) {
@@ -138,6 +164,10 @@ const Grades = () => {
     );
   }
 
+  const filteredExams = role === 'developer' && selectedBranchId
+    ? exams.filter(e => String(e.coaching_center) === String(selectedBranchId))
+    : exams;
+
   const batchStudents = selectedExam ? students.filter(s => s.batch_ids && s.batch_ids.includes(selectedExam.batch)) : [];
 
   return (
@@ -151,21 +181,38 @@ const Grades = () => {
 
       {/* Select Test toolbar */}
       <div className="bg-white dark:bg-primary border border-gray-100 dark:border-gray-800 p-4 rounded-xl shadow-sm flex flex-col md:flex-row gap-4 items-center justify-between">
-        <div className="flex items-center space-x-3 w-full md:max-w-md">
-          <label className="text-xs font-bold text-gray-500 uppercase tracking-wider whitespace-nowrap">Choose Test:</label>
-          <select
-            value={selectedExamId}
-            onChange={(e) => setSelectedExamId(e.target.value)}
-            className="w-full p-2 bg-gray-50 dark:bg-gray-850 border border-gray-200 dark:border-gray-700 rounded-lg text-xs outline-none focus:border-accent text-gray-900 dark:text-white font-semibold cursor-pointer"
-          >
-            {exams.length === 0 ? (
-              <option value="">No tests scheduled</option>
-            ) : (
-              exams.map(ex => (
-                <option key={ex.id} value={ex.id}>{ex.test_name} ({ex.batch_name})</option>
-              ))
-            )}
-          </select>
+        <div className="flex flex-col sm:flex-row gap-4 w-full md:max-w-2xl">
+          {role === 'developer' && (
+            <div className="flex items-center space-x-3 w-full sm:w-1/2">
+              <label className="text-xs font-bold text-gray-500 uppercase tracking-wider whitespace-nowrap">Branch:</label>
+              <select
+                value={selectedBranchId}
+                onChange={(e) => setSelectedBranchId(e.target.value)}
+                className="w-full p-2 bg-gray-50 dark:bg-gray-850 border border-gray-200 dark:border-gray-700 rounded-lg text-xs outline-none focus:border-accent text-gray-900 dark:text-white font-semibold cursor-pointer"
+              >
+                {branches.map(b => (
+                  <option key={b.id} value={b.id}>{b.name}</option>
+                ))}
+              </select>
+            </div>
+          )}
+
+          <div className="flex items-center space-x-3 w-full sm:w-1/2">
+            <label className="text-xs font-bold text-gray-500 uppercase tracking-wider whitespace-nowrap">Choose Test:</label>
+            <select
+              value={selectedExamId}
+              onChange={(e) => setSelectedExamId(e.target.value)}
+              className="w-full p-2 bg-gray-50 dark:bg-gray-850 border border-gray-200 dark:border-gray-700 rounded-lg text-xs outline-none focus:border-accent text-gray-900 dark:text-white font-semibold cursor-pointer"
+            >
+              {filteredExams.length === 0 ? (
+                <option value="">No tests scheduled</option>
+              ) : (
+                filteredExams.map(ex => (
+                  <option key={ex.id} value={ex.id}>{ex.test_name} ({ex.batch_name})</option>
+                ))
+              )}
+            </select>
+          </div>
         </div>
 
         {selectedExam && (

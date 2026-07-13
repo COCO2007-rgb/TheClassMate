@@ -18,6 +18,14 @@ const Batches = () => {
   const [fees, setFees] = useState('');
   const [error, setError] = useState('');
   const [showSubjectMenu, setShowSubjectMenu] = useState(false);
+  const [customSubject, setCustomSubject] = useState('');
+
+  const handleAddCustomSubject = () => {
+    if (customSubject.trim() && !selectedSubjects.includes(customSubject.trim())) {
+      setSelectedSubjects([...selectedSubjects, customSubject.trim()]);
+      setCustomSubject('');
+    }
+  };
 
   const subjectsList = [
     'Mathematics',
@@ -69,6 +77,18 @@ const Batches = () => {
       fetchBatches();
     } catch (err) {
       setError(err.response?.data?.error || 'Failed to create batch.');
+    }
+  };
+
+  const handleDeleteBatch = async (batchId) => {
+    if (!window.confirm("Are you sure you want to delete this batch and move it to the Recycle Bin?")) {
+      return;
+    }
+    try {
+      await api.delete(`/batches/${batchId}/`);
+      fetchBatches();
+    } catch (err) {
+      alert(err.response?.data?.error || "Failed to delete batch.");
     }
   };
 
@@ -167,13 +187,22 @@ const Batches = () => {
                 <span className="text-xs font-bold text-gray-900 dark:text-white">
                   ₹{batch.fees} <span className="font-medium text-[10px] text-gray-400">/ mo</span>
                 </span>
-                <button
-                  onClick={() => navigate(`/batches/${batch.id}`)}
-                  className="px-3.5 py-1.5 bg-[#14213D] hover:bg-[#1d2d4f] dark:bg-gray-800 dark:hover:bg-gray-700 text-white rounded-lg text-[10px] font-bold flex items-center space-x-1 cursor-pointer transition-all"
-                >
-                  <span>Manage Batch</span>
-                  <ArrowRight size={10} />
-                </button>
+                <div className="flex items-center space-x-2">
+                  <button
+                    onClick={() => handleDeleteBatch(batch.id)}
+                    className="p-1.5 bg-red-50 hover:bg-red-100 dark:bg-red-950/20 dark:hover:bg-red-950/30 text-red-500 rounded-lg cursor-pointer transition-all"
+                    title="Delete Batch"
+                  >
+                    <Trash2 size={14} />
+                  </button>
+                  <button
+                    onClick={() => navigate(`/batches/${batch.id}`)}
+                    className="px-3.5 py-1.5 bg-[#14213D] hover:bg-[#1d2d4f] dark:bg-gray-800 dark:hover:bg-gray-700 text-white rounded-lg text-[10px] font-bold flex items-center space-x-1 cursor-pointer transition-all"
+                  >
+                    <span>Manage</span>
+                    <ArrowRight size={10} />
+                  </button>
+                </div>
               </div>
             </motion.div>
           ))}
@@ -211,24 +240,42 @@ const Batches = () => {
             </button>
             
             {showSubjectMenu && (
-              <div className="absolute left-0 right-0 mt-1 p-3 bg-white dark:bg-[#14213D] border border-gray-200 dark:border-gray-750 rounded-lg shadow-xl z-50 grid grid-cols-2 gap-2 max-h-48 overflow-y-auto">
-                {subjectsList.map((subj) => (
-                  <label key={subj} className="flex items-center space-x-2 text-xs font-semibold text-gray-750 dark:text-gray-300 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={selectedSubjects.includes(subj)}
-                      onChange={(e) => {
-                        if (e.target.checked) {
-                          setSelectedSubjects([...selectedSubjects, subj]);
-                        } else {
-                          setSelectedSubjects(selectedSubjects.filter(s => s !== subj));
-                        }
-                      }}
-                      className="rounded border-gray-300 text-accent focus:ring-accent w-4 h-4 cursor-pointer"
-                    />
-                    <span>{subj}</span>
-                  </label>
-                ))}
+              <div className="absolute left-0 right-0 mt-1 p-3 bg-white dark:bg-[#14213D] border border-gray-200 dark:border-gray-750 rounded-lg shadow-xl z-50 flex flex-col space-y-3 max-h-60 overflow-y-auto">
+                <div className="grid grid-cols-2 gap-2">
+                  {subjectsList.map((subj) => (
+                    <label key={subj} className="flex items-center space-x-2 text-xs font-semibold text-gray-750 dark:text-gray-300 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={selectedSubjects.includes(subj)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setSelectedSubjects([...selectedSubjects, subj]);
+                          } else {
+                            setSelectedSubjects(selectedSubjects.filter(s => s !== subj));
+                          }
+                        }}
+                        className="rounded border-gray-300 text-accent focus:ring-accent w-4 h-4 cursor-pointer"
+                      />
+                      <span>{subj}</span>
+                    </label>
+                  ))}
+                </div>
+                <div className="flex items-center space-x-2 pt-2 border-t border-gray-100 dark:border-gray-750">
+                  <input
+                    type="text"
+                    value={customSubject}
+                    onChange={(e) => setCustomSubject(e.target.value)}
+                    placeholder="Add custom subject..."
+                    className="flex-1 p-1.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded text-[11px] outline-none text-gray-900 dark:text-white"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleAddCustomSubject}
+                    className="px-2.5 py-1.5 bg-accent text-primary font-bold text-[10px] rounded hover:opacity-90 cursor-pointer"
+                  >
+                    Add
+                  </button>
+                </div>
               </div>
             )}
           </div>
