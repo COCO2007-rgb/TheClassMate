@@ -5,7 +5,7 @@ import { CalendarDays, Bookmark, Award, Bell, Sparkles, Receipt } from 'lucide-r
 import { motion } from 'framer-motion';
 
 const Dashboard = () => {
-  const { user, cache, updateCache } = useAuth();
+  const { user, child, cache, updateCache } = useAuth();
   const [stats, setStats] = useState(cache.dashboard?.stats || {
     total_students: 1,
     total_batches: 0,
