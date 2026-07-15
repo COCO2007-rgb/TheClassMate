@@ -144,6 +144,11 @@ const MainLayout = ({ children }) => {
     { name: 'Recycle Bin', path: '/recycle-bin', icon: Trash2 },
   ];
 
+  const visibleNavItems = [...navItems];
+  if (role === 'developer') {
+    visibleNavItems.push({ name: 'Developer Portal', path: '/developer/portal', icon: Shield });
+  }
+
   const handleLogout = () => {
     logout();
     navigate('/login');
@@ -205,7 +210,7 @@ const MainLayout = ({ children }) => {
 
           {/* Navigation Links */}
           <nav className="mt-4 px-2 space-y-1">
-            {navItems.map((item) => {
+            {visibleNavItems.map((item) => {
               const isActive = location.pathname === item.path;
               return (
                 <NavLink
