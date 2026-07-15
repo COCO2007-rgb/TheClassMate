@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import api from '../services/api';
 import KPICard from '../components/KPICard';
-import { Users, Layers, CalendarCheck, Landmark, Clock, Award, History, ArrowRight } from 'lucide-react';
+import { Users, Layers, CalendarCheck, Landmark, Clock, Award, History, ArrowRight, Sparkles } from 'lucide-react';
 import { gsap } from 'gsap';
 import { Line, Bar, Pie } from 'react-chartjs-2';
 import {
@@ -18,6 +18,7 @@ import {
   Filler
 } from 'chart.js';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
 ChartJS.register(
   CategoryScale,
@@ -34,6 +35,8 @@ ChartJS.register(
 
 const Dashboard = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const [settings, setSettings] = useState(null);
   const [stats, setStats] = useState({
     total_students: 0,
     total_batches: 0,
@@ -55,6 +58,13 @@ const Dashboard = () => {
 
         const timeRes = await api.get('/timetable/');
         setTimetable(timeRes.data.slice(0, 3));
+
+        try {
+          const settingsRes = await api.get('/settings/');
+          setSettings(settingsRes.data);
+        } catch (e) {
+          console.error('Failed to load settings in dashboard:', e);
+        }
       } catch (err) {
         console.error('Failed to load dashboard metrics:', err);
       } finally {
@@ -137,6 +147,15 @@ const Dashboard = () => {
     }
   };
 
+  // Parse attendance percentage
+  const attendanceVal = parseInt(stats.today_attendance) || 100;
+  const radius = 20;
+  const circumference = 2 * Math.PI * radius;
+  const strokeDashoffset = circumference - (attendanceVal / 100) * circumference;
+
+  const feeTarget = 50000;
+  const feePercent = Math.min(100, Math.round(((stats.fees_collected || 0) / feeTarget) * 100));
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[70vh]">
@@ -147,6 +166,20 @@ const Dashboard = () => {
 
   return (
     <div className="space-y-6">
+
+      {/* Welcoming Hero Banner */}
+      <div className="bg-gradient-to-r from-[#14213D] to-[#1e325c] border border-[#2c3e60] rounded-2xl p-6 text-white shadow-[0_8px_30px_rgb(0,0,0,0.06)] relative overflow-hidden text-left">
+        <div className="absolute right-[-15px] top-[-15px] w-32 h-32 bg-[#FCA311]/15 rounded-full blur-3xl"></div>
+        <div className="absolute left-[30%] bottom-[-20px] w-24 h-24 bg-accent/10 rounded-full blur-2xl"></div>
+        <div className="flex items-center space-x-2 text-accent text-[10px] font-bold tracking-wider uppercase mb-1">
+          <Sparkles size={12} />
+          <span>{settings?.name || 'APEX COACHING ACADEMY'}</span>
+        </div>
+        <h2 className="text-base md:text-lg font-extrabold tracking-tight">Welcome back, {user?.first_name || 'Administrator'}!</h2>
+        <p className="text-[11px] text-gray-300 mt-1.5 leading-relaxed max-w-xl">
+          Manage your academy center dashboard: register new student entries, schedule daily lecture sheets, and review payment logs.
+        </p>
+      </div>
       
       {/* 4 KPIs grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -175,16 +208,39 @@ const Dashboard = () => {
           description="Self attendance matrix status"
           trend="+1.2%"
           onClick={() => navigate('/attendance')}
-        />
+        >
+          <div className="relative w-10 h-10 flex items-center justify-center flex-shrink-0">
+            <svg className="w-10 h-10 transform -rotate-90">
+              <circle cx="20" cy="20" r={radius} stroke="#e5e7eb" strokeWidth="3" fill="transparent" className="dark:stroke-gray-800" />
+              <circle cx="20" cy="20" r={radius} stroke="#FCA311" strokeWidth="3" fill="transparent"
+                strokeDasharray={circumference}
+                strokeDashoffset={strokeDashoffset}
+                strokeLinecap="round"
+                className="transition-all duration-700 ease-out"
+              />
+            </svg>
+            <span className="absolute text-[8px] font-bold text-gray-900 dark:text-white">{stats.today_attendance}</span>
+          </div>
+        </KPICard>
         <KPICard
           className="kpi-card-anim"
           title="Monthly Fee Collection"
           value={`₹${stats.fees_collected}`}
           icon={Landmark}
-          description="Collected ledger revenue"
+          description={`Target progress: ${feePercent}%`}
           trend="+15%"
           onClick={() => navigate('/fees')}
-        />
+        >
+          <div className="flex flex-col items-end space-y-1 w-14 flex-shrink-0">
+            <div className="w-full bg-gray-100 dark:bg-gray-800 h-1.5 rounded-full overflow-hidden">
+              <div 
+                className="bg-emerald-500 h-full rounded-full transition-all duration-700" 
+                style={{ width: `${feePercent}%` }}
+              ></div>
+            </div>
+            <span className="text-[7px] font-bold text-gray-400 dark:text-gray-500">₹50K GOAL</span>
+          </div>
+        </KPICard>
       </div>
 
       {/* Row 2: Charts and Upcoming schedule */}

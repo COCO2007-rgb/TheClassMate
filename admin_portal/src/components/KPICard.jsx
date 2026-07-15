@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 
-const KPICard = ({ title, value, icon: Icon, description, trend, onClick, className }) => {
+const KPICard = ({ title, value, icon: Icon, description, trend, onClick, className, children }) => {
   return (
     <motion.div
       whileHover={{ y: -4, scale: 1.01 }}
@@ -16,18 +16,21 @@ const KPICard = ({ title, value, icon: Icon, description, trend, onClick, classN
           </div>
         )}
       </div>
-      <div className="mt-4">
-        <h3 className="text-3xl font-bold text-gray-900 dark:text-white tracking-tight">{value}</h3>
-        {description && (
-          <div className="mt-2 flex items-center text-xs text-gray-500 dark:text-gray-400">
-            {trend && (
-              <span className={`mr-1 font-semibold ${trend.startsWith('+') ? 'text-green-500' : 'text-red-500'}`}>
-                {trend}
-              </span>
-            )}
-            <span>{description}</span>
-          </div>
-        )}
+      <div className="mt-4 flex items-center justify-between">
+        <div className="min-w-0">
+          <h3 className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight truncate">{value}</h3>
+          {description && (
+            <div className="mt-2 flex items-center text-[10px] text-gray-500 dark:text-gray-400">
+              {trend && (
+                <span className={`mr-1 font-semibold ${trend.startsWith('+') ? 'text-green-500' : 'text-red-500'}`}>
+                  {trend}
+                </span>
+              )}
+              <span className="truncate">{description}</span>
+            </div>
+          )}
+        </div>
+        {children && <div className="flex-shrink-0 ml-3">{children}</div>}
       </div>
     </motion.div>
   );

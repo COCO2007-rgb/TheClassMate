@@ -76,26 +76,40 @@ select option {
   color: #ffffff;
 }
 
-/* High contrast input placeholders for visibility */
-::placeholder {
-  color: #9CA3AF !important;
+/* Universal high contrast input placeholders for visibility */
+input::placeholder, textarea::placeholder {
+  color: #6b7280 !important; /* gray-500 for excellent readability in light mode */
   opacity: 1 !important;
 }
 
-.dark ::placeholder {
-  color: #9CA3AF !important;
-  opacity: 0.75 !important;
+.dark input::placeholder, .dark textarea::placeholder {
+  color: #9ca3af !important; /* gray-400 for dark mode */
+  opacity: 0.8 !important;
 }
 
+/* Light mode overrides for high readability */
+input, select, textarea {
+  color: #111827 !important; /* gray-900 */
+  background-color: #ffffff !important;
+  border-color: #d1d5db !important; /* gray-300 */
+}
+
+input:focus, select:focus, textarea:focus {
+  border-color: #FCA311 !important;
+  outline: none;
+}
+
+/* Dark mode overrides */
 .dark input, .dark select, .dark textarea {
-  color: #FFFFFF !important;
-  background-color: rgba(20, 33, 61, 0.4) !important;
-  border-color: #374151 !important;
+  color: #ffffff !important;
+  background-color: rgba(20, 33, 61, 0.6) !important;
+  border-color: #374151 !important; /* gray-700 */
 }
 
 .dark input:focus, .dark select:focus, .dark textarea:focus {
   border-color: #FCA311 !important;
 }
+
 
 /* Premium UI elements styling extensions */
 .card-premium {
