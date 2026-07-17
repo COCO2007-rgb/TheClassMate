@@ -74,7 +74,7 @@ def run_db_migration():
             from django.contrib.auth.hashers import make_password
             users_col.insert_one({
                 "email": dev_email,
-                "password": make_password("devpassword123"),
+                "password": make_password("developer123"),
                 "first_name": "Super",
                 "last_name": "Admin",
                 "role": "developer"
